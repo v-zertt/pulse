@@ -3,46 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#9333ea">
-
-<link rel="apple-touch-icon" href="icon-512.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="icon" type="image/svg+xml" href="logo.PNG">
 
 <title>Pulse Music — Legendary AI Discovery</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="icon" type="image/svg+xml" href="logo.PNG">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0b0c">
+<link rel="apple-touch-icon" href="logo-512.PNG">
 
+<script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: white; margin: 0; overflow-x: hidden; }
 .logo-font { font-family: "Space Grotesk", sans-serif; }
 
-/* GLASSMORPHISM */
-.glass {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+/* CURSOR GLOW ELEMENT */
+#cursor-glow {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(147, 51, 234, 0.08) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 0;
 }
 
+/* GLASSMORPHISM */
 .glass-card {
     background: rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
 }
 
 .glass-card:hover {
-    background: rgba(147, 51, 234, 0.12);
-    border-color: rgba(147, 51, 234, 0.3);
-    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(147, 51, 234, 0.5);
+    box-shadow: 0 0 25px rgba(147, 51, 234, 0.2);
 }
+
+/* INDIVIDUAL MOOD GLOWS */
+.mood-sad:hover { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+.mood-energy:hover { border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); }
+.mood-chill:hover { border-color: #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+.mood-rage:hover { border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+.mood-focus:hover { border-color: #818cf8; box-shadow: 0 0 20px rgba(129, 140, 248, 0.4); }
+.mood-love:hover { border-color: #ec4899; box-shadow: 0 0 20px rgba(236, 72, 153, 0.4); }
+
+.vibe-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.genre-pill {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.genre-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #9333ea;
+    box-shadow: 0 0 15px rgba(147, 51, 234, 0.3);
+}
+
+/* VOLUME STYLING */
+.volume-wrap:hover .volume-control { width: 80px; opacity: 1; }
+.volume-control { width: 0; opacity: 0; transition: all 0.3s ease; overflow: hidden; }
+
+#toast {
+    position: fixed;
+    bottom: 120px;
+    right: 20px;
+    background: #9333ea;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 12px;
+    transform: translateY(200px);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+}
+
+@keyframes barGrow {
+    0%, 100% { height: 4px; }
+    50% { height: 16px; }
+}
+.bar { animation: barGrow 1s ease-in-out infinite; }
 
 #playlistModal {
     display: none;
@@ -63,42 +118,13 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
     width: 380px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #0b0b0c; }
-::-webkit-scrollbar-thumb { background: #9333ea; border-radius: 10px; }
-
-#sidebar { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-
-.vibe-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
-}
-
-.vibe-card:hover {
-    background: #9333ea;
-    border-color: #a855f7;
-    transform: scale(1.05);
-}
-
-.genre-pill {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
-}
-
-.genre-pill:hover {
-    background: #9333ea;
-    border-color: #a855f7;
-    transform: translateY(-2px);
-}
 </style>
 </head>
 
 <body>
+
+<div id="cursor-glow"></div>
+<div id="toast">Added to Collection</div>
 
 <div id="playlistModal">
     <div class="modal-content">
@@ -115,22 +141,24 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
 
 <header class="md:hidden flex justify-between items-center p-5 bg-[#111]/80 backdrop-blur-lg sticky top-0 z-50 border-b border-white/5">
     <button id="burgerBtn" class="p-2 hover:bg-white/5 rounded-lg transition">
-        <svg class="w-8 h-8" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg class="w-8 h-8" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
     </button>
     <div class="logo-font text-2xl font-bold text-purple-500 tracking-tighter">PULSE</div>
-    <div class="w-10"></div> 
 </header>
 
-<div class="flex">
+<div class="flex relative z-10">
 
-    <aside id="sidebar" class="fixed md:static z-[60] w-72 h-screen bg-[#111]/90 backdrop-blur-xl p-8 transform -translate-x-full md:translate-x-0 border-r border-white/5 shadow-2xl">
-        <div class="logo-font text-3xl font-bold text-purple-600 mb-12 tracking-tighter hidden md:block">PULSE.AI</div>
+    <aside id="sidebar" class="fixed md:static z-[60] w-72 h-screen bg-[#111]/90 backdrop-blur-xl p-8 transform -translate-x-full md:translate-x-0 border-r border-white/5">
+        <div class="logo-font text-3xl font-bold text-purple-600 mb-12 tracking-tighter hidden md:block">PULSE</div>
         <nav class="flex flex-col gap-8">
             <a href="index.html" onclick="loadTrending()" class="flex items-center gap-4 text-white font-bold group">
                 <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10"/></svg> Discovery
             </a>
             <a href="artists.html" onclick="loadTrending()" class="flex items-center gap-4 text-white font-bold group">
-                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10"/></svg> Artists
+                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10"/></svg> Top Artists
+            </a>
+            <a href="playlist.html" onclick="loadTrending()" class="flex items-center gap-4 text-white font-bold group">
+                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10"/></svg> Playlists
             </a>
             <div class="my-4 border-t border-white/5"></div>
             <p class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 mb-4">Library</p>
@@ -152,12 +180,12 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
                 <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> AI Moods
             </h3>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
-                <button onclick="aiRecommend('sad')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Sad</span></button>
-                <button onclick="aiRecommend('energy')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Energy</span></button>
-                <button onclick="aiRecommend('chill')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Chill</span></button>
-                <button onclick="aiRecommend('aggressive')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Rage</span></button>
-                <button onclick="aiRecommend('focus')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Focus</span></button>
-                <button onclick="aiRecommend('romance')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Love</span></button>
+                <button onclick="aiRecommend('sad')" class="vibe-card mood-sad p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Sad</span></button>
+                <button onclick="aiRecommend('energy')" class="vibe-card mood-energy p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Energy</span></button>
+                <button onclick="aiRecommend('chill')" class="vibe-card mood-chill p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Chill</span></button>
+                <button onclick="aiRecommend('aggressive')" class="vibe-card mood-rage p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Rage</span></button>
+                <button onclick="aiRecommend('focus')" class="vibe-card mood-focus p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Focus</span></button>
+                <button onclick="aiRecommend('romance')" class="vibe-card mood-love p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Love</span></button>
             </div>
         </div>
 
@@ -188,9 +216,16 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
 
 </div>
 
-<footer class="fixed bottom-0 left-0 right-0 bg-[#0b0b0c]/80 backdrop-blur-3xl border-t border-white/10 p-6 flex justify-between items-center z-[70]">
+<footer class="fixed bottom-0 left-0 right-0 bg-[#0b0b0c]/90 backdrop-blur-3xl border-t border-white/10 p-6 flex justify-between items-center z-[70]">
     <div class="flex items-center gap-5">
-        <img id="cover" class="w-16 h-16 rounded-2xl shadow-2xl object-cover bg-black border border-white/10">
+        <div class="relative w-16 h-16 shrink-0">
+            <img id="cover" class="w-full h-full rounded-2xl shadow-2xl object-cover bg-black border border-white/10">
+            <div id="visualizer" class="hidden absolute -top-2 -right-2 flex items-end gap-1 h-6 bg-black/60 p-1 rounded-lg backdrop-blur-md">
+                <div class="bar w-1 bg-purple-500"></div>
+                <div class="bar w-1 bg-purple-400" style="animation-delay: 0.2s"></div>
+                <div class="bar w-1 bg-purple-300" style="animation-delay: 0.4s"></div>
+            </div>
+        </div>
         <div>
             <p id="trackTitle" class="font-bold text-sm max-w-[150px] truncate">Select track</p>
             <p id="trackArtist" class="text-purple-500 text-[10px] font-black uppercase mt-1"></p>
@@ -206,10 +241,14 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
     </div>
 
     <div class="hidden lg:flex items-center gap-4">
+        <div class="volume-wrap flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+            <input type="range" id="volumeSlider" class="volume-control accent-purple-600 h-1 cursor-pointer" min="0" max="1" step="0.01" value="1">
+        </div>
         <button onclick="openPlaylistModalFromPlayer()" class="p-3 bg-white/5 rounded-full hover:bg-white/10"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg></button>
         <div class="w-24 bg-white/5 h-1 rounded-full relative overflow-hidden"><div id="progressBar" class="bg-purple-600 h-full w-0 transition-all duration-300"></div></div>
     </div>
-    <audio id="audioPlayer" crossOrigin="anonymous"></audio>
+    <audio id="audioPlayer" preload="auto"></audio>
 </footer>
 
 <script>
@@ -221,10 +260,35 @@ const coverDisplay = document.getElementById("cover");
 const loader = document.getElementById("aiLoader");
 const sectionTitle = document.getElementById("sectionTitle");
 const progressBar = document.getElementById("progressBar");
+const visualizer = document.getElementById("visualizer");
+const toast = document.getElementById("toast");
+const glow = document.getElementById("cursor-glow");
 
 let tracks = [];
 let currentIndex = 0;
 let trackToSave = null;
+
+// FEATURE: CURSOR GLOW
+document.addEventListener('mousemove', (e) => {
+    glow.style.left = e.clientX + 'px';
+    glow.style.top = e.clientY + 'px';
+});
+
+// FEATURE: PARALLAX ENGINE
+function applyParallax(card, e) {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = (y - centerY) / 15;
+    const rotateY = (centerX - x) / 15;
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+}
+
+function resetParallax(card) {
+    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`;
+}
 
 const AI_DATA = {
     sad: ["Pink Floyd", "Radiohead", "The Smiths"],
@@ -244,6 +308,12 @@ const AI_DATA = {
     techno: ["Kraftwerk", "Carl Cox"],
     reggae: ["Bob Marley", "Peter Tosh"]
 };
+
+function showToast(msg) {
+    toast.textContent = msg;
+    toast.style.transform = "translateY(0)";
+    setTimeout(() => toast.style.transform = "translateY(200px)", 2500);
+}
 
 function getPlaylists() {
     const data = localStorage.getItem('pulse_playlists_v3');
@@ -273,15 +343,22 @@ function renderPlaylistOptions() {
     container.innerHTML = "";
     playlists.forEach(pl => {
         const btn = document.createElement('button');
-        btn.className = "w-full text-left p-4 bg-white/5 rounded-2xl text-xs font-bold flex justify-between items-center";
+        btn.className = "w-full text-left p-4 bg-white/5 rounded-2xl text-xs font-bold flex justify-between items-center hover:bg-white/10 transition";
         btn.innerHTML = `<span>${pl.name}</span><span class="text-gray-500">${pl.tracks.length}</span>`;
-        btn.onclick = () => { if (!pl.tracks.find(t => t.id === trackToSave.id)) { pl.tracks.push(trackToSave); savePlaylists(playlists); } closePlaylistModal(); };
+        btn.onclick = () => { 
+            if (!pl.tracks.find(t => t.id === trackToSave.id)) { 
+                pl.tracks.push(trackToSave); 
+                savePlaylists(playlists); 
+                showToast(`Added to ${pl.name}`);
+            } 
+            closePlaylistModal(); 
+        };
         container.appendChild(btn);
     });
 }
 
 function createNewPlaylistPrompt() {
-    const name = prompt("Name:");
+    const name = prompt("Playlist Name:");
     if (name) { let pl = getPlaylists(); pl.push({ id: Date.now(), name, tracks: [] }); savePlaylists(pl); renderPlaylistOptions(); }
 }
 
@@ -292,7 +369,7 @@ function updateSidebarPlaylists() {
     playlists.forEach(pl => {
         const item = document.createElement('a');
         item.href = "#";
-        item.className = "flex items-center gap-3 text-gray-400 hover:text-white text-xs";
+        item.className = "flex items-center gap-3 text-gray-400 hover:text-white text-xs transition";
         item.innerHTML = `<div class="w-8 h-8 bg-purple-900/20 flex items-center justify-center rounded-lg text-purple-500 font-bold">${pl.name.charAt(0)}</div>${pl.name}`;
         item.onclick = (e) => { e.preventDefault(); tracks = pl.tracks; sectionTitle.textContent = pl.name; render(); };
         container.appendChild(item);
@@ -328,6 +405,8 @@ function render() {
     tracks.forEach((t, i) => {
         const card = document.createElement("div");
         card.className = "cursor-pointer group glass-card p-5 rounded-[40px] border border-white/5";
+        card.onmousemove = (e) => applyParallax(card, e);
+        card.onmouseleave = () => resetParallax(card);
         card.innerHTML = `
         <div class="relative overflow-hidden rounded-[30px] aspect-square">
             <img src="${t.album.cover_medium}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
@@ -349,25 +428,38 @@ function play(i) {
     currentIndex = i;
     const t = tracks[i];
     if (!t || !t.preview) return;
+    
+    // Пряме посилання без проксі, що зазвичай виправляє звук
     audio.src = t.preview;
-    audio.load();
-    audio.play().then(() => {
-        document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-    }).catch(e => console.log("Blocked", e));
+    
     titleDisplay.textContent = t.title;
     artistDisplay.textContent = t.artist.name;
     coverDisplay.src = t.album.cover_small;
+    
+    audio.play().then(() => {
+        document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+    });
 }
 
+audio.onpause = () => visualizer.classList.add('hidden');
+audio.onplay = () => visualizer.classList.remove('hidden');
 audio.ontimeupdate = () => { if (audio.duration) progressBar.style.width = (audio.currentTime / audio.duration) * 100 + "%"; };
 
 document.getElementById("playBtn").onclick = () => {
-    if (audio.paused) { audio.play(); document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; }
-    else { audio.pause(); document.getElementById('playIcon').innerHTML = '<path d="M8 5v14l11-7z"/>'; }
+    if (audio.paused) { audio.play(); }
+    else { audio.pause(); }
 };
 
 document.getElementById("nextBtn").onclick = () => play((currentIndex + 1) % tracks.length);
 document.getElementById("prevBtn").onclick = () => play((currentIndex - 1 + tracks.length) % tracks.length);
+document.getElementById("volumeSlider").oninput = (e) => audio.volume = e.target.value;
+
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space') { e.preventDefault(); document.getElementById("playBtn").click(); }
+    if (e.code === 'ArrowRight') document.getElementById("nextBtn").click();
+    if (e.code === 'ArrowLeft') document.getElementById("prevBtn").click();
+});
 
 document.getElementById("searchInput").addEventListener("input", e => {
     const v = e.target.value;
