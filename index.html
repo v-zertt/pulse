@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Pulse Music — Legendary AI Discovery</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: white; margin: 0; overflow-x: hidden; }
+.logo-font { font-family: "Space Grotesk", sans-serif; }
+
+/* GLASSMORPHISM */
+.glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+    background: rgba(147, 51, 234, 0.12);
+    border-color: rgba(147, 51, 234, 0.3);
+    transform: translateY(-8px);
+}
+
+#playlistModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(20px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: rgba(20, 20, 20, 0.9);
+    backdrop-filter: blur(25px);
+    padding: 40px;
+    border-radius: 40px;
+    width: 380px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0b0b0c; }
+::-webkit-scrollbar-thumb { background: #9333ea; border-radius: 10px; }
+
+#sidebar { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.vibe-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.vibe-card:hover {
+    background: #9333ea;
+    border-color: #a855f7;
+    transform: scale(1.05);
+}
+
+.genre-pill {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.genre-pill:hover {
+    background: #9333ea;
+    border-color: #a855f7;
+    transform: translateY(-2px);
+}
+</style>
+</head>
+
+<body>
+
+<div id="playlistModal">
+    <div class="modal-content">
+        <div class="text-center mb-8">
+            <h3 class="text-xl font-bold italic">Add to Collection</h3>
+        </div>
+        <div id="playlistOptions" class="flex flex-col gap-2 mb-8 max-h-48 overflow-y-auto pr-2"></div>
+        <div class="flex flex-col gap-3">
+            <button onclick="createNewPlaylistPrompt()" class="w-full py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition">+ New Playlist</button>
+            <button onclick="closePlaylistModal()" class="w-full py-3 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-white transition">Close</button>
+        </div>
+    </div>
+</div>
+
+<header class="md:hidden flex justify-between items-center p-5 bg-[#111]/80 backdrop-blur-lg sticky top-0 z-50 border-b border-white/5">
+    <button id="burgerBtn" class="p-2 hover:bg-white/5 rounded-lg transition">
+        <svg class="w-8 h-8" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="logo-font text-2xl font-bold text-purple-500 tracking-tighter">PULSE</div>
+    <div class="w-10"></div> 
+</header>
+
+<div class="flex">
+
+    <aside id="sidebar" class="fixed md:static z-[60] w-72 h-screen bg-[#111]/90 backdrop-blur-xl p-8 transform -translate-x-full md:translate-x-0 border-r border-white/5 shadow-2xl">
+        <div class="logo-font text-3xl font-bold text-purple-600 mb-12 tracking-tighter hidden md:block">PULSE.AI</div>
+        <nav class="flex flex-col gap-8">
+            <a href="index.html" onclick="loadTrending()" class="flex items-center gap-4 text-white font-bold group">
+                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10"/></svg> Discovery
+            </a>
+            <a href="artists.html" onclick="loadTrending()" class="flex items-center gap-4 text-white font-bold group">
+                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10"/></svg> Artists
+            </a>
+            <div class="my-4 border-t border-white/5"></div>
+            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 mb-4">Library</p>
+            <div id="sidebarPlaylists" class="flex flex-col gap-4"></div>
+        </nav>
+    </aside>
+
+    <div id="mobileOverlay" class="fixed inset-0 bg-black/80 hidden md:hidden z-50 backdrop-blur-sm"></div>
+
+    <main class="flex-1 p-6 md:p-12 pb-44">
+
+        <div class="mb-12 relative max-w-2xl">
+            <input id="searchInput" class="w-full bg-white/5 backdrop-blur-md p-5 pl-14 rounded-full outline-none focus:ring-2 focus:ring-purple-600 transition-all text-sm border border-white/10" placeholder="Search tracks, artists...">
+            <svg class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+
+        <div class="mb-12">
+            <h3 class="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500 mb-6 flex items-center gap-3">
+                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> AI Moods
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
+                <button onclick="aiRecommend('sad')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Sad</span></button>
+                <button onclick="aiRecommend('energy')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Energy</span></button>
+                <button onclick="aiRecommend('chill')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Chill</span></button>
+                <button onclick="aiRecommend('aggressive')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Rage</span></button>
+                <button onclick="aiRecommend('focus')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Focus</span></button>
+                <button onclick="aiRecommend('romance')" class="vibe-card p-6 rounded-[35px] flex flex-col items-center gap-4"><span class="text-[9px] font-black uppercase tracking-widest">Love</span></button>
+            </div>
+        </div>
+
+        <div class="mb-12">
+            <h3 class="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-500 mb-6">Legendary Genres</h3>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="aiRecommend('metal')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Metal</button>
+                <button onclick="aiRecommend('rock')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Rock</button>
+                <button onclick="aiRecommend('grunge')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Grunge</button>
+                <button onclick="aiRecommend('rap')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Hip-Hop</button>
+                <button onclick="aiRecommend('pop')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Pop</button>
+                <button onclick="aiRecommend('jazz')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Jazz</button>
+                <button onclick="aiRecommend('blues')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Blues</button>
+                <button onclick="aiRecommend('disco')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Disco</button>
+                <button onclick="aiRecommend('techno')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Techno</button>
+                <button onclick="aiRecommend('reggae')" class="genre-pill px-8 py-3 rounded-full font-bold text-[9px] uppercase tracking-widest">Reggae</button>
+            </div>
+        </div>
+
+        <div id="aiLoader" class="hidden mb-10 text-center animate-pulse">
+            <span class="text-purple-500 font-bold italic text-sm tracking-tighter">AI Pulse is selecting tracks...</span>
+        </div>
+
+        <h2 id="sectionTitle" class="text-3xl font-bold mb-10 italic">Trending Now</h2>
+        <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8"></div>
+
+    </main>
+
+</div>
+
+<footer class="fixed bottom-0 left-0 right-0 bg-[#0b0b0c]/80 backdrop-blur-3xl border-t border-white/10 p-6 flex justify-between items-center z-[70]">
+    <div class="flex items-center gap-5">
+        <img id="cover" class="w-16 h-16 rounded-2xl shadow-2xl object-cover bg-black border border-white/10">
+        <div>
+            <p id="trackTitle" class="font-bold text-sm max-w-[150px] truncate">Select track</p>
+            <p id="trackArtist" class="text-purple-500 text-[10px] font-black uppercase mt-1"></p>
+        </div>
+    </div>
+    
+    <div class="flex flex-col items-center gap-4">
+        <div class="flex gap-8 items-center">
+            <button id="prevBtn" class="text-gray-500 hover:text-white"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11 19L2 12l9-7v14zM22 5v14h-2V5z"/></svg></button>
+            <button id="playBtn" class="bg-white text-black p-3 rounded-full hover:scale-110 transition"><svg id="playIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+            <button id="nextBtn" class="text-gray-500 hover:text-white"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 5l9 7-9 7V5zM2 5h2v14H2z"/></svg></button>
+        </div>
+    </div>
+
+    <div class="hidden lg:flex items-center gap-4">
+        <button onclick="openPlaylistModalFromPlayer()" class="p-3 bg-white/5 rounded-full hover:bg-white/10"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg></button>
+        <div class="w-24 bg-white/5 h-1 rounded-full relative overflow-hidden"><div id="progressBar" class="bg-purple-600 h-full w-0 transition-all duration-300"></div></div>
+    </div>
+    <audio id="audioPlayer" crossOrigin="anonymous"></audio>
+</footer>
+
+<script>
+const grid = document.getElementById("grid");
+const audio = document.getElementById("audioPlayer");
+const titleDisplay = document.getElementById("trackTitle");
+const artistDisplay = document.getElementById("trackArtist");
+const coverDisplay = document.getElementById("cover");
+const loader = document.getElementById("aiLoader");
+const sectionTitle = document.getElementById("sectionTitle");
+const progressBar = document.getElementById("progressBar");
+
+let tracks = [];
+let currentIndex = 0;
+let trackToSave = null;
+
+const AI_DATA = {
+    sad: ["Pink Floyd", "Radiohead", "The Smiths"],
+    energy: ["AC/DC", "Metallica", "Eminem"],
+    chill: ["Moby", "Air", "Massive Attack"],
+    aggressive: ["Slayer", "Slipknot", "Rammstein"],
+    focus: ["Hans Zimmer", "Brian Eno"],
+    romance: ["Queen", "Chris Isaak"],
+    metal: ["Iron Maiden", "Black Sabbath"],
+    rock: ["The Beatles", "Led Zeppelin"],
+    grunge: ["Nirvana", "Pearl Jam"],
+    rap: ["2Pac", "Snoop Dogg"],
+    pop: ["Michael Jackson", "Daft Punk"],
+    jazz: ["Miles Davis", "John Coltrane"],
+    blues: ["B.B. King", "Muddy Waters"],
+    disco: ["Bee Gees", "ABBA"],
+    techno: ["Kraftwerk", "Carl Cox"],
+    reggae: ["Bob Marley", "Peter Tosh"]
+};
+
+function getPlaylists() {
+    const data = localStorage.getItem('pulse_playlists_v3');
+    return data ? JSON.parse(data) : [{ id: 1, name: "Favorites", tracks: [] }];
+}
+
+function savePlaylists(playlists) {
+    localStorage.setItem('pulse_playlists_v3', JSON.stringify(playlists));
+    updateSidebarPlaylists();
+}
+
+function openPlaylistModal(index) {
+    trackToSave = tracks[index];
+    renderPlaylistOptions();
+    document.getElementById('playlistModal').style.display = "flex";
+}
+
+function openPlaylistModalFromPlayer() {
+    if (tracks[currentIndex]) { trackToSave = tracks[currentIndex]; renderPlaylistOptions(); document.getElementById('playlistModal').style.display = "flex"; }
+}
+
+function closePlaylistModal() { document.getElementById('playlistModal').style.display = "none"; }
+
+function renderPlaylistOptions() {
+    const container = document.getElementById('playlistOptions');
+    const playlists = getPlaylists();
+    container.innerHTML = "";
+    playlists.forEach(pl => {
+        const btn = document.createElement('button');
+        btn.className = "w-full text-left p-4 bg-white/5 rounded-2xl text-xs font-bold flex justify-between items-center";
+        btn.innerHTML = `<span>${pl.name}</span><span class="text-gray-500">${pl.tracks.length}</span>`;
+        btn.onclick = () => { if (!pl.tracks.find(t => t.id === trackToSave.id)) { pl.tracks.push(trackToSave); savePlaylists(playlists); } closePlaylistModal(); };
+        container.appendChild(btn);
+    });
+}
+
+function createNewPlaylistPrompt() {
+    const name = prompt("Name:");
+    if (name) { let pl = getPlaylists(); pl.push({ id: Date.now(), name, tracks: [] }); savePlaylists(pl); renderPlaylistOptions(); }
+}
+
+function updateSidebarPlaylists() {
+    const container = document.getElementById('sidebarPlaylists');
+    const playlists = getPlaylists();
+    container.innerHTML = "";
+    playlists.forEach(pl => {
+        const item = document.createElement('a');
+        item.href = "#";
+        item.className = "flex items-center gap-3 text-gray-400 hover:text-white text-xs";
+        item.innerHTML = `<div class="w-8 h-8 bg-purple-900/20 flex items-center justify-center rounded-lg text-purple-500 font-bold">${pl.name.charAt(0)}</div>${pl.name}`;
+        item.onclick = (e) => { e.preventDefault(); tracks = pl.tracks; sectionTitle.textContent = pl.name; render(); };
+        container.appendChild(item);
+    });
+}
+
+async function aiRecommend(category) {
+    loader.classList.remove('hidden');
+    sectionTitle.textContent = category.toUpperCase();
+    const artists = AI_DATA[category] || [category];
+    let collected = [];
+    for (const name of artists) {
+        try {
+            const res = await fetch(`https://corsproxy.io/?https://api.deezer.com/search?q=artist:"${name}"&limit=5`);
+            const data = await res.json();
+            if (data.data) collected = [...collected, ...data.data];
+        } catch (e) {}
+    }
+    tracks = collected.sort(() => 0.5 - Math.random());
+    loader.classList.add('hidden');
+    render();
+}
+
+async function loadTrending() {
+    const res = await fetch("https://corsproxy.io/?https://api.deezer.com/chart/0/tracks?limit=25");
+    const data = await res.json();
+    tracks = data.data;
+    render();
+}
+
+function render() {
+    grid.innerHTML = "";
+    tracks.forEach((t, i) => {
+        const card = document.createElement("div");
+        card.className = "cursor-pointer group glass-card p-5 rounded-[40px] border border-white/5";
+        card.innerHTML = `
+        <div class="relative overflow-hidden rounded-[30px] aspect-square">
+            <img src="${t.album.cover_medium}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all gap-2">
+                <button id="add-${i}" class="bg-white/10 backdrop-blur-md p-3 rounded-full hover:bg-purple-600 transition z-10">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                </button>
+                <div class="bg-purple-600 p-3 rounded-full"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+        </div>
+        <div class="mt-4"><h3 class="font-bold truncate text-sm italic">${t.title}</h3><p class="text-gray-500 text-[9px] uppercase mt-1">${t.artist.name}</p></div>`;
+        card.onclick = () => play(i);
+        grid.appendChild(card);
+        document.getElementById(`add-${i}`).onclick = (e) => { e.stopPropagation(); openPlaylistModal(i); };
+    });
+}
+
+function play(i) {
+    currentIndex = i;
+    const t = tracks[i];
+    if (!t || !t.preview) return;
+    audio.src = t.preview;
+    audio.load();
+    audio.play().then(() => {
+        document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+    }).catch(e => console.log("Blocked", e));
+    titleDisplay.textContent = t.title;
+    artistDisplay.textContent = t.artist.name;
+    coverDisplay.src = t.album.cover_small;
+}
+
+audio.ontimeupdate = () => { if (audio.duration) progressBar.style.width = (audio.currentTime / audio.duration) * 100 + "%"; };
+
+document.getElementById("playBtn").onclick = () => {
+    if (audio.paused) { audio.play(); document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; }
+    else { audio.pause(); document.getElementById('playIcon').innerHTML = '<path d="M8 5v14l11-7z"/>'; }
+};
+
+document.getElementById("nextBtn").onclick = () => play((currentIndex + 1) % tracks.length);
+document.getElementById("prevBtn").onclick = () => play((currentIndex - 1 + tracks.length) % tracks.length);
+
+document.getElementById("searchInput").addEventListener("input", e => {
+    const v = e.target.value;
+    if (v.length > 2) {
+        fetch(`https://corsproxy.io/?https://api.deezer.com/search?q=${v}`).then(r => r.json()).then(d => { tracks = d.data; render(); });
+    }
+});
+
+const burgerBtn = document.getElementById("burgerBtn");
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("mobileOverlay");
+burgerBtn.onclick = () => { sidebar.classList.remove("-translate-x-full"); overlay.classList.remove("hidden"); };
+overlay.onclick = () => { sidebar.classList.add("-translate-x-full"); overlay.classList.add("hidden"); };
+
+updateSidebarPlaylists();
+loadTrending();
+</script>
+
+</body>
+</html>

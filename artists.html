@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulse — Popular Artists</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Outfit', sans-serif; background-color: #0b0b0c;}
+.logo{font-family:"Space Grotesk",sans-serif}
+.artist-card:hover img { transform: scale(1.05); }
+</style>
+</head>
+
+<body class="bg-[#0b0b0c] text-white">
+
+<header class="md:hidden flex justify-between p-4 bg-[#111]">
+<button id="burger">
+<svg class="w-7 h-7" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+<path d="M4 6h16M4 12h16M4 18h16"/>
+</svg>
+</button>
+<h1 class="logo text-xl text-purple-500">Pulse</h1>
+</header>
+
+<div class="flex">
+
+<aside id="sidebar" class="fixed md:static z-40 w-64 h-screen bg-[#111] p-6 transform -translate-x-full md:translate-x-0 transition">
+<h1 class="logo text-2xl text-purple-500 mb-10">Pulse</h1>
+<nav class="flex flex-col gap-6 text-gray-400">
+<a class="flex gap-3 hover:text-white cursor-pointer" href="index.html">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10"/></svg> Home
+</a>
+<a class="flex gap-3 text-white cursor-pointer" href="artists.html">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg> Popular Artists
+</a>
+<a class="flex gap-3 hover:text-white cursor-pointer" href="playlist.html">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg> Your Playlists
+</a>
+</nav>
+</aside>
+
+<div id="overlay" class="fixed inset-0 bg-black/60 hidden md:hidden"></div>
+
+<main class="flex-1 p-6 md:p-10 pb-32">
+<h2 class="text-3xl font-bold mb-10">Popular Artists</h2>
+<div id="artistsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8">
+    </div>
+</main>
+
+</div>
+
+<footer class="fixed bottom-0 left-0 right-0 bg-[#111] border-t border-[#222] p-4 flex justify-between items-center z-50">
+    <div class="w-full text-center text-gray-500 text-xs logo">Pulse Music — Discover New Sound</div>
+</footer>
+
+<script>
+async function loadArtists() {
+    const grid = document.getElementById('artistsGrid');
+    grid.innerHTML = "Loading artists...";
+    
+    try {
+        const res = await fetch("https://corsproxy.io/?https://api.deezer.com/chart/0/artists?limit=20");
+        const data = await res.json();
+        
+        grid.innerHTML = "";
+        data.data.forEach(artist => {
+            const card = document.createElement('div');
+            card.className = "artist-card flex flex-col items-center group cursor-pointer";
+            card.innerHTML = `
+                <div class="relative w-full aspect-square mb-4 overflow-hidden rounded-full border-4 border-transparent group-hover:border-purple-600 transition-all duration-300">
+                    <img src="${artist.picture_medium}" class="w-full h-full object-cover transition-transform duration-500">
+                </div>
+                <h4 class="text-lg font-bold group-hover:text-purple-400 transition">${artist.name}</h4>
+                <p class="text-gray-500 text-sm">Artist</p>
+            `;
+            grid.appendChild(card);
+        });
+    } catch (e) {
+        grid.innerHTML = "Failed to load artists.";
+    }
+}
+
+// Бургер (твій код без змін)
+const burger = document.getElementById("burger"), sidebar = document.getElementById("sidebar"), overlay = document.getElementById("overlay");
+burger.onclick = () => { sidebar.classList.remove("-translate-x-full"); overlay.classList.remove("hidden"); }
+overlay.onclick = () => { sidebar.classList.add("-translate-x-full"); overlay.classList.add("hidden"); }
+
+loadArtists();
+</script>
+
+</body>
+</html>

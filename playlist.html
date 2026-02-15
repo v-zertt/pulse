@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulse — Your Playlists</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Space+Grotesk:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; }
+        .logo { font-family: "Space Grotesk", sans-serif; }
+        /* Кастомний дизайн карток */
+        .playlist-card { background: #111; border: 1px solid #222; transition: 0.3s; }
+        .playlist-card:hover { border-color: #a855f7; background: #161616; }
+    </style>
+</head>
+
+<body class="bg-[#0b0b0c] text-white">
+
+<header class="md:hidden flex justify-between p-4 bg-[#111]">
+    <button id="burger">
+        <svg class="w-7 h-7" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+    </button>
+    <h1 class="logo text-xl text-purple-500">Pulse</h1>
+</header>
+
+<div class="flex">
+
+    <aside id="sidebar" class="fixed md:static z-40 w-64 h-screen bg-[#111] p-6 transform -translate-x-full md:translate-x-0 transition">
+        <h1 class="logo text-2xl text-purple-500 mb-10">Pulse</h1>
+        <nav class="flex flex-col gap-6 text-gray-400">
+            <a class="flex gap-3 hover:text-white cursor-pointer" href="index.html">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M4 10v10h6v-6h4v6h6V10"/></svg> Home
+            </a>
+            <a class="flex gap-3 text-white cursor-pointer" href="playlist.html">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg> Your Playlists
+            </a>
+            <a class="flex gap-3 hover:text-white cursor-pointer"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 21s-6-4.35-9-8.5C-1 7 3 3 7.5 6.5 9.24 7.91 12 11 12 11s2.76-3.09 4.5-4.5C21 3 25 7 21 12.5c-3 4.15-9 8.5-9 8.5z"/></svg> Liked</a>
+        </nav>
+    </aside>
+
+    <div id="overlay" class="fixed inset-0 bg-black/60 hidden md:hidden"></div>
+
+    <main class="flex-1 p-6 md:p-10 pb-32">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+            <h2 class="text-3xl font-bold">My Playlists</h2>
+            <div class="flex gap-2 w-full md:w-auto">
+                <input id="playlistName" class="flex-1 bg-[#181818] px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-purple-600" placeholder="New playlist name">
+                <button id="createPlaylist" class="bg-purple-600 px-6 py-2 rounded-lg hover:bg-purple-700 font-semibold">Create</button>
+            </div>
+        </div>
+
+        <div id="playlistsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            </div>
+
+        <section id="playlistDetails" class="hidden mt-10 animate-in fade-in duration-300">
+            <button onclick="closePlaylist()" class="mb-6 text-purple-400 hover:underline">← Back to all</button>
+            <div class="flex items-end gap-6 mb-8">
+                <div class="w-32 h-32 md:w-48 md:h-48 bg-purple-900 rounded-2xl flex items-center justify-center shadow-2xl">
+                    <svg class="w-20 h-20 text-purple-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm uppercase font-bold text-gray-400">Playlist</p>
+                    <h3 id="activeTitle" class="text-4xl md:text-6xl font-black italic"></h3>
+                </div>
+            </div>
+            <div id="tracksList" class="space-y-2">
+                </div>
+        </section>
+
+    </main>
+</div>
+
+<footer class="fixed bottom-0 left-0 right-0 bg-[#111] border-t border-[#222] p-4 flex justify-between items-center z-50">
+    <div class="flex items-center gap-4 w-1/3">
+        <img id="cover" class="w-12 h-12 rounded bg-[#222]">
+        <div class="truncate">
+            <p id="title" class="truncate font-semibold">Select track</p>
+            <p id="artist" class="text-gray-400 text-sm truncate"></p>
+        </div>
+    </div>
+    <div class="flex gap-6">
+        <button id="play" class="bg-white text-black p-2 rounded-full hover:scale-110 transition">
+            <svg id="playIcon" class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+    </div>
+    <div class="w-1/3 text-right hidden sm:block">
+        <p class="text-xs text-gray-500 logo">Pulse Music</p>
+    </div>
+    <audio id="audio"></audio>
+</footer>
+
+<script>
+    // Дані
+    let playlists = JSON.parse(localStorage.getItem('pulse_data')) || [
+        { name: "My Favorites", tracks: [] }
+    ];
+    let activePlaylistIdx = null;
+
+    const grid = document.getElementById('playlistsGrid');
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('play');
+    const playIcon = document.getElementById('playIcon');
+
+    // Рендер плейлистів
+    function renderPlaylists() {
+        grid.innerHTML = "";
+        playlists.forEach((pl, idx) => {
+            const card = document.createElement('div');
+            card.className = "playlist-card p-6 rounded-2xl cursor-pointer group";
+            card.onclick = () => openPlaylist(idx);
+            card.innerHTML = `
+                <div class="relative mb-4 overflow-hidden rounded-xl">
+                    <div class="aspect-square bg-gradient-to-br from-purple-600 to-blue-900 flex items-center justify-center">
+                         <svg class="w-12 h-12 text-white/20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                    </div>
+                </div>
+                <h4 class="text-xl font-bold truncate">${pl.name}</h4>
+                <p class="text-gray-500 text-sm">${pl.tracks.length} tracks</p>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function openPlaylist(idx) {
+        activePlaylistIdx = idx;
+        grid.classList.add('hidden');
+        document.getElementById('playlistDetails').classList.remove('hidden');
+        document.getElementById('activeTitle').textContent = playlists[idx].name;
+        renderTracks();
+    }
+
+    function closePlaylist() {
+        grid.classList.remove('hidden');
+        document.getElementById('playlistDetails').classList.add('hidden');
+    }
+
+    function renderTracks() {
+        const list = document.getElementById('tracksList');
+        list.innerHTML = "";
+        const pl = playlists[activePlaylistIdx];
+
+        if (pl.tracks.length === 0) {
+            list.innerHTML = `<p class="text-gray-600 py-10">This playlist is empty. Add songs from Home page.</p>`;
+            return;
+        }
+
+        pl.tracks.forEach((t, i) => {
+            const row = document.createElement('div');
+            row.className = "flex items-center justify-between p-3 hover:bg-[#181818] rounded-xl group transition cursor-pointer";
+            row.onclick = () => playTrack(i);
+            row.innerHTML = `
+                <div class="flex items-center gap-4 overflow-hidden">
+                    <img src="${t.cover}" class="w-10 h-10 rounded">
+                    <div class="truncate">
+                        <p class="font-bold truncate">${t.title}</p>
+                        <p class="text-xs text-gray-400 truncate">${t.artist}</p>
+                    </div>
+                </div>
+                <button onclick="event.stopPropagation(); removeTrack(${i})" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 px-2">✕</button>
+            `;
+            list.appendChild(row);
+        });
+    }
+
+    // Програвання (ВИПРАВЛЕНО)
+    function playTrack(idx) {
+        const t = playlists[activePlaylistIdx].tracks[idx];
+        if (!t.preview) return alert("Preview unavailable");
+
+        audio.src = t.preview;
+        audio.load(); // Обов'язково для оновлення стріму
+        
+        const playPromise = audio.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                document.getElementById('title').textContent = t.title;
+                document.getElementById('artist').textContent = t.artist;
+                document.getElementById('cover').src = t.cover;
+                updateIcon(true);
+            }).catch(error => {
+                console.log("Autoplay prevented", error);
+            });
+        }
+    }
+
+    function togglePlay() {
+        if (!audio.src) return;
+        if (audio.paused) {
+            audio.play();
+            updateIcon(true);
+        } else {
+            audio.pause();
+            updateIcon(false);
+        }
+    }
+
+    function updateIcon(isPlaying) {
+        playIcon.innerHTML = isPlaying 
+            ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>' 
+            : '<path d="M8 5v14l11-7z"/>';
+    }
+
+    playBtn.onclick = togglePlay;
+
+    // Створення плейлиста
+    document.getElementById('createPlaylist').onclick = () => {
+        const input = document.getElementById('playlistName');
+        const name = input.value.trim();
+        if (!name) return;
+        playlists.push({ name, tracks: [] });
+        input.value = "";
+        save();
+        renderPlaylists();
+    };
+
+    function removeTrack(idx) {
+        playlists[activePlaylistIdx].tracks.splice(idx, 1);
+        save();
+        renderTracks();
+        renderPlaylists();
+    }
+
+    function save() {
+        localStorage.setItem('pulse_data', JSON.stringify(playlists));
+    }
+
+    // БУРГЕР (Твій оригінальний код)
+    const burger = document.getElementById("burger");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    burger.onclick = () => {
+        sidebar.classList.remove("-translate-x-full");
+        overlay.classList.remove("hidden");
+    }
+
+    overlay.onclick = () => {
+        sidebar.classList.add("-translate-x-full");
+        overlay.classList.add("hidden");
+    }
+
+    renderPlaylists();
+</script>
+
+</body>
+</html>
