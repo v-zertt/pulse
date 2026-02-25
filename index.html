@@ -15,11 +15,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-/* CORE STYLES */
 body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: white; margin: 0; overflow-x: hidden; }
 .logo-font { font-family: "Space Grotesk", sans-serif; }
 
-/* CURSOR GLOW - Dynamic Background */
 #cursor-glow {
     position: fixed;
     width: 600px;
@@ -32,7 +30,6 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
     transition: background 1s ease; /* Smooth color change */
 }
 
-/* GLASSMORPHISM CARD */
 .glass-card {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(14px);
@@ -48,7 +45,6 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
     box-shadow: 0 10px 40px -10px var(--accent-glow, rgba(147, 51, 234, 0.3));
 }
 
-/* GENRE PILLS */
 .genre-pill {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -61,12 +57,10 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
     box-shadow: 0 0 15px var(--accent-glow, rgba(147, 51, 234, 0.4));
 }
 
-/* SIDEBAR TRANSITION */
 #sidebar {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* PROGRESS BAR */
 #progressContainer {
     cursor: pointer;
     height: 6px;
@@ -102,7 +96,6 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
 }
 #progressContainer:hover #progressBar::after { opacity: 1; }
 
-/* TOAST */
 #toast {
     position: fixed;
     bottom: 120px;
@@ -118,14 +111,10 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
     z-index: 200;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-
-/* SCROLLBAR */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #0b0b0c; }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #555; }
-
-/* MODAL */
 #playlistModal {
     display: none;
     position: fixed;
@@ -285,9 +274,8 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
 </footer>
 
 <script>
-// --- CONFIG & DATA ---
 const AI_DATA = {
-    "post-punk": ["Joy Division", "The Cure", "Bauhaus", "The Sound", "The Chameleons", "Interpol", "She Past Away", "Lebanon Hanover", "ДК Енергетик", "Mistmorn", "Burnout", "SadSvit", "Siouxsie and the Banshees", "The Soft Moon", "Drab Majesty", "Echo & the Bunnymen", "Sudno (Ukr Cover)"],
+    "post-punk": ["Joy Division", "The Cure", "Bauhaus", "The Sound", "The Chameleons", "Interpol", "She Past Away", "Lebanon Hanover", "ДК Енергетик", "Mistmorn", "Burnout", "SadSvit", "Siouxsie and the Banshees", "The Soft Moon", "Drab Majesty", "Echo & the Bunnymen", "Sudno (Ukr Cover)", "BaWN"],
     "punk": ["The Clash", "Ramones", "Sex Pistols", "Dead Kennedys", "Iggy Pop", "The Stooges", "Black Flag", "Misfits", "Beton", "Zhadan i Sobaky"],
     "rock": ["The White Stripes", "Royal Blood", "Soundgarden", "Alice in Chains", "Strayed", "Schmalgauzen", "Epolets", "The Black Keys", "Queens of the Stone Age", "Ziferblat", "Jack White", "The Dead Weather", "Arctic Monkeys"],
     "metal": ["Metallica", "Iron Maiden", "Gojira", "Jinjer", "1914", "Whitechapel", "Mastodon", "Opeth", "System of a Down", "Sepultura", "Motanka", "Ignea"],
@@ -302,14 +290,13 @@ const AI_DATA = {
 };
 
 const MOOD_DATA = {
-    "melancholic": ["Slowdive", "The Smiths", "Mistmorn", "Radiohead", "Beach House", "Cocteau Twins"],
-    "aggressive": ["Death Grips", "Jinjer", "The Stooges", "1914", "Idles", "Beton"],
+    "melancholic": ["Slowdive", "The Smiths", "Mistmorn", "Radiohead", "Beach House", "Cocteau Twins", "Arctic Monkeys"],
+    "aggressive": ["Death Grips", "Jinjer", "The Stooges", "1914", "Idles", "Beton", "Slipknot"],
     "euphoric": ["M83", "Tame Impala", "The Naked and Famous", "Empire of the Sun", "MGMT"],
     "dark": ["Bauhaus", "Perturbator", "Burzum", "Lorn", "She Past Away", "Lebanon Hanover"],
     "chill": ["Bonobo", "Air", "Zero 7", "Nightmares on Wax", "Thievery Corporation"]
 };
 
-// --- DOM ELEMENTS ---
 const elements = {
     grid: document.getElementById("grid"),
     audio: document.getElementById("audioPlayer"),
@@ -340,14 +327,12 @@ let state = {
     isPlaying: false
 };
 
-// --- INITIALIZATION ---
 function init() {
     setupEventListeners();
     updateSidebarPlaylists();
     loadTrending();
 }
 
-// --- EVENT LISTENERS ---
 function setupEventListeners() {
     document.addEventListener('mousemove', (e) => {
         elements.cursorGlow.style.left = e.clientX + 'px';
@@ -370,7 +355,7 @@ function setupEventListeners() {
     });
 }
 
-// --- CORE FUNCTIONS ---
+
 function toggleSidebar() {
     const isClosed = elements.sidebar.classList.contains("-translate-x-full");
     if (isClosed) {
@@ -394,8 +379,6 @@ function updateThemeColor(color) {
     document.documentElement.style.setProperty('--accent-glow', color + '4d');
     elements.cursorGlow.style.background = `radial-gradient(circle, ${color}20 0%, rgba(0,0,0,0) 70%)`;
 }
-
-// --- DATA FETCHING ---
 async function fetchDeezer(url) {
     try {
         const proxy = "https://corsproxy.io/?";
@@ -459,7 +442,6 @@ async function aiRecommend(genre) {
     if(window.innerWidth < 768 && !elements.sidebar.classList.contains("-translate-x-full")) toggleSidebar();
 }
 
-// --- RENDERING ---
 function renderGrid() {
     elements.grid.innerHTML = "";
     state.tracks.forEach((t, i) => {
@@ -488,7 +470,6 @@ function renderGrid() {
     });
 }
 
-// --- AUDIO PLAYER ---
 function playTrack(index) {
     state.currentIndex = index;
     const track = state.tracks[index];
@@ -529,7 +510,6 @@ function seek(e) {
     if (elements.audio.duration) elements.audio.currentTime = percent * elements.audio.duration;
 }
 
-// --- PLAYLIST SYSTEM ---
 function getPlaylists() {
     const data = localStorage.getItem('pulse_v3_playlists');
     return data ? JSON.parse(data) : [{ id: 1, name: "Favorites", tracks: [] }];
