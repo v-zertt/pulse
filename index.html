@@ -226,6 +226,8 @@ body { font-family: 'Outfit', sans-serif; background-color: #0b0b0c; color: whit
             <p class="text-purple-500 text-xs font-bold uppercase tracking-widest animate-pulse">Digging through archives...</p>
         </div>
 
+        <div id="errorBanner" class="hidden mb-8 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-mono break-words"></div>
+
         <h2 id="sectionTitle" class="text-2xl md:text-4xl font-bold mb-8 italic tracking-tighter text-white/90">Trending Now</h2>
         <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
 
@@ -304,6 +306,7 @@ const elements = {
     artist: document.getElementById("trackArtist"),
     cover: document.getElementById("cover"),
     loader: document.getElementById("aiLoader"),
+    errorBanner: document.getElementById("errorBanner"),
     sectionTitle: document.getElementById("sectionTitle"),
     progressBar: document.getElementById("progressBar"),
     progressContainer: document.getElementById("progressContainer"),
@@ -373,6 +376,16 @@ function showToast(msg) {
     setTimeout(() => elements.toast.style.transform = "translateY(200px)", 2500);
 }
 
+function showError(msg) {
+    elements.errorBanner.textContent = msg;
+    elements.errorBanner.classList.remove('hidden');
+}
+
+function clearError() {
+    elements.errorBanner.classList.add('hidden');
+    elements.errorBanner.textContent = "";
+}
+
 function updateThemeColor(color) {
     document.documentElement.style.setProperty('--accent-main', color);
     document.documentElement.style.setProperty('--accent-color', color + '80');
@@ -380,17 +393,19 @@ function updateThemeColor(color) {
     elements.cursorGlow.style.background = `radial-gradient(circle, ${color}20 0%, rgba(0,0,0,0) 70%)`;
 }
 
-// --- Music data: Apple iTunes Search API ---
-// This is Apple's own official public endpoint, loaded via a <script> tag using
-// its native JSONP support (the documented `callback=` parameter). Because it's
-// a plain <script> request to Apple's own domain — not a third-party "CORS
-// bypass" proxy — it isn't affected by CORS at all, and isn't the kind of domain
-// antivirus/network filters block (unlike allorigins.win, corsproxy.io, etc,
-// which kept failing). No proxy of any kind is involved.
-function fetchITunesJSONP(term, limit) {
+// --- Music data: Deezer API via native JSONP ---
+// Deezer's own API documentation confirms JSONP support (output=jsonp&callback=...)
+// specifically as their recommended way to call the API from a browser without a
+// CORS error. Deezer is not an Apple domain, so it isn't affected by iOS Universal
+// Links redirecting to an installed app (which is what broke itunes.apple.com on
+// iPhone) — the redirect issue only happens if the visitor actually has the
+// matching app (Deezer's own app) installed, unlike Apple's Music app which
+// ships on every iPhone. No third-party proxy is used at all.
+function fetchDeezer(url) {
     return new Promise((resolve) => {
-        const cb = "__itunesCb_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
+        const cb = "__deezerCb_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
         const script = document.createElement("script");
+        const separator = url.includes("?") ? "&" : "?";
         let done = false;
         const cleanup = () => {
             delete window[cb];
@@ -402,51 +417,27 @@ function fetchITunesJSONP(term, limit) {
             cleanup();
             resolve(results);
         };
-        window[cb] = (data) => finish((data && Array.isArray(data.results)) ? data.results : []);
-        script.src = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=${limit}&callback=${cb}`;
+        window[cb] = (data) => {
+            clearError();
+            finish((data && Array.isArray(data.data)) ? data.data : []);
+        };
+        script.src = url + separator + "output=jsonp&callback=" + cb;
         script.onerror = () => {
-            console.error("iTunes request failed for term:", term);
-            showToast("Помилка завантаження — див. консоль (F12)");
+            showError(`Deezer SCRIPT ERROR — запит не завантажився. URL: ${script.src}`);
             finish([]);
         };
-        setTimeout(() => finish([]), 10000);
+        setTimeout(() => {
+            if (!done) showError(`Deezer TIMEOUT — запит завис на 10с без відповіді. URL: ${script.src}`);
+            finish([]);
+        }, 10000);
         document.body.appendChild(script);
     });
-}
-
-// Adapts an iTunes result item into the same track shape the rest of the app
-// (renderGrid, playTrack, playlists) already expects, so nothing else needs to change.
-function adaptItunesTrack(item) {
-    return {
-        id: item.trackId,
-        title: item.trackName,
-        preview: item.previewUrl,
-        artist: { name: item.artistName },
-        album: {
-            cover_medium: item.artworkUrl100 ? item.artworkUrl100.replace("100x100bb", "400x400bb") : "",
-            cover_small: item.artworkUrl60 || item.artworkUrl100 || ""
-        }
-    };
-}
-
-async function searchItunes(term, limit = 25) {
-    const raw = await fetchITunesJSONP(term, limit);
-    return raw.filter(t => t.previewUrl).map(adaptItunesTrack);
 }
 
 async function loadTrending() {
     updateThemeColor('#9333ea');
     elements.loader.classList.remove('hidden');
-    // iTunes Search has no single "top chart" endpoint like Deezer did, so trending
-    // is built the same way genre/mood picks already were: a shuffled mix of
-    // well-known artists searched individually.
-    const allArtists = Object.values(AI_DATA).flat();
-    const picks = allArtists.sort(() => 0.5 - Math.random()).slice(0, 6);
-    let collected = [];
-    for (const name of picks) {
-        collected = [...collected, ...(await searchItunes(name, 5))];
-    }
-    state.tracks = collected.sort(() => 0.5 - Math.random());
+    state.tracks = await fetchDeezer("https://api.deezer.com/chart/0/tracks?limit=30");
     elements.sectionTitle.textContent = "Global Trending";
     elements.loader.classList.add('hidden');
     renderGrid();
@@ -456,7 +447,7 @@ async function loadTrending() {
 async function search(query) {
     elements.loader.classList.remove('hidden');
     elements.sectionTitle.textContent = `Results: ${query}`;
-    state.tracks = await searchItunes(query, 25);
+    state.tracks = await fetchDeezer(`https://api.deezer.com/search?q=${query}&limit=25`);
     elements.loader.classList.add('hidden');
     renderGrid();
 }
@@ -469,7 +460,8 @@ async function aiMood(mood, color) {
     let collected = [];
     const shuffled = artists.sort(() => 0.5 - Math.random()).slice(0, 5);
     for (const name of shuffled) {
-        collected = [...collected, ...(await searchItunes(name, 5))];
+        const tracks = await fetchDeezer(`https://api.deezer.com/search?q=artist:"${name}"&limit=5`);
+        collected = [...collected, ...tracks];
     }
     state.tracks = collected.sort(() => 0.5 - Math.random());
     elements.loader.classList.add('hidden');
@@ -484,7 +476,8 @@ async function aiRecommend(genre) {
     let collected = [];
     const shuffledArtists = artists.sort(() => 0.5 - Math.random()).slice(0, 5);
     for (const name of shuffledArtists) {
-        collected = [...collected, ...(await searchItunes(name, 5))];
+        const tracks = await fetchDeezer(`https://api.deezer.com/search?q=artist:"${name}"&limit=5`);
+        collected = [...collected, ...tracks];
     }
     state.tracks = collected.sort(() => 0.5 - Math.random());
     elements.loader.classList.add('hidden');
